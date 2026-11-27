@@ -37,13 +37,11 @@ TypeScript declarations are included.
 
 The world didn't need another JS library. I just wanted to include a damn HTML file.
 
-Sometimes I just want to make a quick HTML page. Change a line, upload the file over FTP, done. Yes, FTP. I know what year it is. I got tired of running a build every time I touched a page. If all I did was fix a typo, I don't need my laptop or a build server to make an event out of it.
+Sometimes I want a quick HTML page: change a line, upload it over FTP, done. Yes, FTP. I know what year it is. If all I did was fix a typo, I don't want a laptop or a build server making an event out of it.
 
-The first thing I wanted was to include one HTML file in another, like PHP's include. Plain HTML doesn't have that. Then I wanted to declare a JavaScript variable and use it in my markup, loop over a list, validate a form, and make an HTTP request. All small things. Somehow I kept ending up with either a full framework or three libraries in a trench coat.
+Plain HTML can't even include one file in another, so I wanted PHP's include. Then a variable in my markup, a loop over a list, a form check, an HTTP request. Small things, and I kept ending up with a full framework or three libraries in a trench coat. Build-free options existed, but some felt more complicated than the page I was making, and I usually needed another library anyway. I still have a soft spot for jQuery: drop in a script and get on with it.
 
-There are other libraries that don't need a build step. Some felt more complicated than the page I was trying to make, and I often needed to add another library anyway. I still have a soft spot for jQuery. Being able to drop in a script and get on with it was genuinely cool.
-
-I use modern frameworks too. They're great when I'm building an app. But for docs, a quick presentation, or a landing page, I wanted to start with HTML and keep it that way. So I built BitsyJS. Even in the AI era, I wrote the code by hand because I wanted to think through what actually needed to be there and leave the rest out. I want to be able to come back in six months and still know how it works.
+I use modern frameworks when I'm building an app. For docs, a presentation, or a landing page, I wanted to start with HTML and keep it that way. So I built BitsyJS, by hand, even in the AI era, so I can come back in six months and still know how it works.
 
 ## Quick start
 
