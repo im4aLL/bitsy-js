@@ -23,16 +23,21 @@ jobs:
                   FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
               run: |
                   set -euo pipefail
+                  # Plain FTP on purpose: the deploy action below also connects without TLS,
+                  # so the check must use the same transport rather than trip over a shared
+                  # hosting certificate that does not match the FTP hostname.
                   state_url="ftp://$FTP_SERVER/.ftp-deploy-sync-state.json"
+                  curl_log="$RUNNER_TEMP/ftp-state-check.log"
                   status=0
-                  curl --silent --user "$FTP_USERNAME:$FTP_PASSWORD" --ssl-reqd -o /dev/null "$state_url" || status=$?
+                  curl --silent --show-error --user "$FTP_USERNAME:$FTP_PASSWORD" -o /dev/null "$state_url" 2> "$curl_log" || status=$?
 
                   if [ "$status" -eq 0 ]; then
                       echo "Deploy state exists on the server, nothing to seed."
                       exit 0
                   fi
                   if [ "$status" -ne 78 ]; then
-                      echo "Could not read the deploy state from the server (curl exit $status)." >&2
+                      echo "Could not read the deploy state from the server (curl exit $status):" >&2
+                      cat "$curl_log" >&2
                       exit "$status"
                   fi
 
@@ -40,7 +45,7 @@ jobs:
                   state_file="$RUNNER_TEMP/ftp-deploy-sync-state.json"
                   printf '{"description":"DO NOT DELETE THIS FILE. Seeded by the deploy workflow so the first publish can run.","version":"1.0.0","generatedTime":%s,"data":[]}\n' \
                       "$(date +%s)000" > "$state_file"
-                  curl --silent --show-error --fail --user "$FTP_USERNAME:$FTP_PASSWORD" --ssl-reqd \
+                  curl --silent --show-error --fail --user "$FTP_USERNAME:$FTP_PASSWORD" \
                       --upload-file "$state_file" "$state_url"
                   echo "Deploy state seeded."
 
