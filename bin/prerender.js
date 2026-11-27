@@ -3,6 +3,7 @@
 import fs from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
+import { validateOutputPaths, writeOutput } from "./prerender-output.js";
 
 const MIME_TYPES = {
     ".html": "text/html; charset=utf-8",
@@ -32,15 +33,17 @@ function printUsage() {
     console.log(
         `
 Usage:
-  node bin/prerender.js --src=<inputDir> --dist=<outputDir> [options]
+  bitsy-prerender --src=<inputDir> --dist=<outputDir> [options]
 
 Options:
   --src=<dir>        Source directory containing HTML files (required)
   --dist=<dir>       Destination directory for pre-rendered output (required)
   --entry=<files>    Comma-separated list of HTML files relative to src (optional)
-  --timeout=<ms>     Max wait time for bitsy:rendered per page (default: 10000)
-  --clean            Remove existing dist directory before writing
+  --timeout=<ms>     Navigation and render timeout per page (default: 10000)
+  --clean            Replace the output directory after rendering succeeds
   --help             Show this help message
+
+Add <meta name="bitsy-prerender" content="wait"> to pages that must wait for BitsyJS.
 `.trim(),
     );
 }
@@ -176,6 +179,51 @@ async function loadPlaywright() {
     }
 }
 
+async function renderPage(page, pageUrl, timeout) {
+    const errors = [];
+    const onPageError = (error) => errors.push(error.message);
+    const onConsole = (message) => {
+        if (message.type() === "error") {
+            errors.push(message.text());
+        }
+    };
+
+    page.on("pageerror", onPageError);
+    page.on("console", onConsole);
+
+    try {
+        await page.goto(pageUrl, { waitUntil: "networkidle", timeout });
+
+        const html = await page.evaluate(async (timeoutMs) => {
+            const waitsForRender = document.head.querySelector('meta[name="bitsy-prerender"][content="wait"]');
+            if (waitsForRender && !window.__bitsyRendered) {
+                let timer;
+                try {
+                    await Promise.race([
+                        window.__bitsyReady,
+                        new Promise((_, reject) => {
+                            timer = setTimeout(
+                                () => reject(new Error("Timed out waiting for bitsy:rendered")),
+                                timeoutMs,
+                            );
+                        }),
+                    ]);
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+
+            const doctype = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : "";
+            return doctype + document.documentElement.outerHTML;
+        }, timeout);
+
+        return { html, errors };
+    } finally {
+        page.off("pageerror", onPageError);
+        page.off("console", onConsole);
+    }
+}
+
 async function main() {
     const args = parseArgs(process.argv.slice(2));
 
@@ -194,18 +242,14 @@ async function main() {
     const srcDir = path.resolve(cwd, args.src);
     const distDir = path.resolve(cwd, args.dist);
 
-    if (srcDir === distDir) {
-        console.error("Error: --src and --dist cannot be the same directory.");
-        process.exit(1);
-    }
-
     const srcStat = await fs.stat(srcDir).catch(() => null);
     if (!srcStat?.isDirectory()) {
-        console.error(`Error: Source directory not found: ${srcDir}`);
-        process.exit(1);
+        throw new Error(`Source directory not found: ${srcDir}`);
     }
 
-    const allFiles = await walkDir(srcDir);
+    await validateOutputPaths(srcDir, distDir, cwd, args.clean);
+
+    const allFiles = (await walkDir(srcDir)).sort();
     const entryPages = [];
     const staticAssets = [];
 
@@ -236,106 +280,58 @@ async function main() {
         process.exit(0);
     }
 
-    if (args.clean) {
-        if (distDir === cwd || distDir === path.parse(distDir).root) {
-            console.error(`Error: Refusing to clean unsafe directory: ${distDir}`);
-            process.exit(1);
-        }
-        await fs.rm(distDir, { recursive: true, force: true });
-    }
-
-    await fs.mkdir(distDir, { recursive: true });
-
-    // Serve from cwd if srcDir is inside cwd so relative imports like ../lib/bitsy.js resolve
     const isSrcInsideCwd = srcDir.startsWith(cwd + path.sep);
     const serverRoot = isSrcInsideCwd ? cwd : srcDir;
     const urlPrefix = isSrcInsideCwd ? "/" + path.relative(cwd, srcDir).split(path.sep).join("/") : "";
 
     const { chromium } = await loadPlaywright();
     const { server, port } = await createStaticServer(serverRoot);
-    const browser = await chromium.launch();
+    let browser;
 
     try {
+        browser = await chromium.launch();
         const page = await browser.newPage();
 
         await page.addInitScript(() => {
             window.__bitsyReady = new Promise((resolve) => {
-                if (window.__bitsyRendered) {
-                    resolve();
-                    return;
-                }
                 document.addEventListener("bitsy:rendered", () => resolve(), { once: true });
             });
         });
 
-        for (const relPath of entryPages) {
-            const sourceHtml = await fs.readFile(path.join(srcDir, relPath), "utf8");
-            const usesBitsy = /bitsy/i.test(sourceHtml);
-            const urlPath = `${urlPrefix}/${relPath.split(path.sep).join("/")}`;
-            const pageUrl = `http://127.0.0.1:${port}${urlPath}`;
+        await writeOutput(distDir, args.clean, async (outputDir) => {
+            for (const relPath of entryPages) {
+                const urlPath = `${urlPrefix}/${relPath.split(path.sep).map(encodeURIComponent).join("/")}`;
+                const { html, errors } = await renderPage(page, `http://127.0.0.1:${port}${urlPath}`, args.timeout);
+                const outPath = path.join(outputDir, relPath);
+                await fs.mkdir(path.dirname(outPath), { recursive: true });
+                await fs.writeFile(outPath, html, "utf8");
 
-            const errors = [];
-            const onPageError = (err) => errors.push(err.message);
-            const onConsole = (msg) => {
-                if (msg.type() === "error") {
-                    errors.push(msg.text());
-                }
-            };
-
-            page.on("pageerror", onPageError);
-            page.on("console", onConsole);
-
-            await page.goto(pageUrl, { waitUntil: "networkidle", timeout: args.timeout });
-
-            if (usesBitsy) {
-                await page.evaluate((timeoutMs) => {
-                    if (window.__bitsyRendered) {
-                        return;
+                if (errors.length > 0) {
+                    console.warn(`Warnings/errors on ${relPath}:`);
+                    for (const error of errors) {
+                        console.warn(`  - ${error}`);
                     }
-                    return Promise.race([
-                        window.__bitsyReady,
-                        new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error("Timed out waiting for bitsy:rendered")), timeoutMs),
-                        ),
-                    ]);
-                }, args.timeout);
-            }
-
-            const renderedHtml = await page.evaluate(() => {
-                const doctype = document.doctype
-                    ? `<!DOCTYPE ${document.doctype.name}${document.doctype.publicId ? ` PUBLIC "${document.doctype.publicId}"` : ""}${document.doctype.systemId ? ` "${document.doctype.systemId}"` : ""}>\n`
-                    : "";
-                return doctype + document.documentElement.outerHTML;
-            });
-
-            page.off("pageerror", onPageError);
-            page.off("console", onConsole);
-
-            const outPath = path.join(distDir, relPath);
-            await fs.mkdir(path.dirname(outPath), { recursive: true });
-            await fs.writeFile(outPath, renderedHtml, "utf8");
-
-            console.log(`Pre-rendered: ${relPath} -> ${path.relative(cwd, outPath)}`);
-
-            if (errors.length > 0) {
-                console.warn(`  Warnings/errors on ${relPath}:`);
-                for (const err of errors) {
-                    console.warn(`    - ${err}`);
                 }
             }
-        }
 
-        for (const relPath of staticAssets) {
-            const srcAsset = path.join(srcDir, relPath);
-            const distAsset = path.join(distDir, relPath);
-            await fs.mkdir(path.dirname(distAsset), { recursive: true });
-            await fs.copyFile(srcAsset, distAsset);
+            for (const relPath of staticAssets) {
+                const distAsset = path.join(outputDir, relPath);
+                await fs.mkdir(path.dirname(distAsset), { recursive: true });
+                await fs.copyFile(path.join(srcDir, relPath), distAsset);
+            }
+        });
+
+        for (const relPath of entryPages) {
+            console.log(`Pre-rendered: ${relPath} -> ${path.relative(cwd, path.join(distDir, relPath))}`);
         }
 
         console.log(`\nDone. ${entryPages.length} page(s) pre-rendered, ${staticAssets.length} asset(s) copied.`);
     } finally {
-        await browser.close();
-        server.close();
+        try {
+            await browser?.close();
+        } finally {
+            server.close();
+        }
     }
 }
 

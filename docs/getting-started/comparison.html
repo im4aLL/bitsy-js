@@ -93,21 +93,29 @@
 
                         <h2 id="compare-libraries">Compare libraries<a class="docs-anchor" href="#compare-libraries" aria-hidden="true" tabindex="-1">#</a></h2>
                         <p>These are starting points, not feature checklists. Several tools can solve the same problem with custom code or extensions.</p>
+                        <p id="comparison-size-note">
+                            Sizes are for the linked browser JavaScript files, minified where available and rounded to 0.1 kB. CSS, optional plugins, and server
+                            code are excluded.
+                        </p>
 
                         <div class="docs-table-scroll" role="region" aria-labelledby="comparison-caption" tabindex="0">
-                            <table class="docs-comparison-table">
+                            <table class="docs-comparison-table" aria-describedby="comparison-size-note">
                                 <caption class="docs-visually-hidden" id="comparison-caption">
-                                    Libraries and tools by primary use case
+                                    Libraries and tools by file size and primary use case
                                 </caption>
                                 <thead>
                                     <tr>
                                         <th scope="col">Library</th>
+                                        <th scope="col">Before gzip</th>
+                                        <th scope="col">Gzipped</th>
                                         <th scope="col">Reach for it when</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <th scope="row">BitsyJS</th>
+                                        <td><a href="../assets/bitsy.min.js">30.5&nbsp;kB</a></td>
+                                        <td>9.2&nbsp;kB</td>
                                         <td>
                                             You want existing HTML to load partials, bind data, render JSON with local templates, and handle simple forms. Plain
                                             data renders once; signals opt specific bindings into updates.
@@ -118,12 +126,18 @@
                                             <a href="https://github.com/github/include-fragment-element">@github/<wbr />include-fragment-element</a>
                                         </th>
                                         <td>
+                                            <a href="https://cdn.jsdelivr.net/npm/@github/include-fragment-element@6.4.1/dist/bundle.min.js">7.6&nbsp;kB</a>
+                                        </td>
+                                        <td>2.3&nbsp;kB</td>
+                                        <td>
                                             You want a custom element that fetches an HTML fragment and replaces itself with the result. It supports fallback
                                             content and optional lazy loading. If you only need includes, you don't need a full data-binding library.
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://github.com/gustafnk/h-include">h-include</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/h-include@4.5.0/h-include.min.js">3.8&nbsp;kB</a></td>
+                                        <td>1.7&nbsp;kB</td>
                                         <td>
                                             You want to fetch HTML into a custom element without replacing the wrapper. It also supports conditional includes
                                             and an alternate URL if the request fails.
@@ -131,6 +145,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://web-fragments.dev/">Web Fragments</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/web-fragments@0.8.2/dist/elements.min.js">28.1&nbsp;kB</a></td>
+                                        <td>8.8&nbsp;kB</td>
                                         <td>
                                             You want independently deployed micro-frontends that can coexist in one page, for example during a gradual
                                             migration. That's a different job from including a shared <code>header.html</code> in a static site.
@@ -138,6 +154,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://alpinejs.dev/">Alpine.js</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js">55.9&nbsp;kB</a></td>
+                                        <td>19.9&nbsp;kB</td>
                                         <td>
                                             You want reactive state, loops, conditions, and events directly in HTML. This is the closest fit if your main job is
                                             wiring up interactive widgets rather than assembling pages from files.
@@ -145,6 +163,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://github.com/vuejs/petite-vue">petite-vue</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/petite-vue@0.4.1/dist/petite-vue.iife.js">16.9&nbsp;kB</a></td>
+                                        <td>7.1&nbsp;kB</td>
                                         <td>
                                             You are enhancing existing markup and already like Vue-style bindings and reactivity. BitsyJS instead bundles
                                             file-based partials and basic request and form helpers.
@@ -152,6 +172,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://htmx.org/">htmx</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js">52.2&nbsp;kB</a></td>
+                                        <td>16.8&nbsp;kB</td>
                                         <td>
                                             Your endpoints return HTML and you want requests and swaps declared in the markup. BitsyJS can also render JSON into
                                             a template in the current page.
@@ -159,6 +181,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://data-star.dev/">Datastar</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js">35.7&nbsp;kB</a></td>
+                                        <td>14.1&nbsp;kB</td>
                                         <td>
                                             You want browser-side signals plus server-driven updates, including streamed HTML or signal patches. BitsyJS does
                                             not require a server patch protocol.
@@ -166,6 +190,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://unpoly.com/">Unpoly</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/unpoly@3.15.0/unpoly.min.js">186.0&nbsp;kB</a></td>
+                                        <td>61.0&nbsp;kB</td>
                                         <td>
                                             You want partial page updates as users navigate and submit forms on a server-rendered site. BitsyJS enhances the
                                             current page and leaves ordinary navigation alone.
@@ -173,6 +199,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://stimulus.hotwired.dev/">Stimulus</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.umd.min.js">46.1&nbsp;kB</a></td>
+                                        <td>11.4&nbsp;kB</td>
                                         <td>
                                             Your HTML is already rendered and you want to organize its behavior in JavaScript controllers. BitsyJS also provides
                                             directives for rendering, including loops and partials.
@@ -180,6 +208,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://hyperscript.org/">_hyperscript</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.94/dist/_hyperscript.min.js">175.4&nbsp;kB</a></td>
+                                        <td>46.0&nbsp;kB</td>
                                         <td>
                                             You want to write event-driven behavior in a small language embedded in HTML. BitsyJS uses JavaScript expressions
                                             and covers data rendering as well as events.
@@ -187,6 +217,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://github.com/developit/htm">Preact + HTM</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/htm@3.1.1/preact/standalone.module.js">13.2&nbsp;kB</a></td>
+                                        <td>5.3&nbsp;kB</td>
                                         <td>
                                             You want Preact components without compiling JSX. HTM lets you write component markup in JavaScript template
                                             literals rather than adding directives to an existing HTML file.
@@ -194,6 +226,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://vanjs.org/">VanJS</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/vanjs-core@1.6.2/src/van.min.js">3.6&nbsp;kB</a></td>
+                                        <td>1.6&nbsp;kB</td>
                                         <td>
                                             You want reactive state and real DOM elements created with JavaScript functions, without a virtual DOM. BitsyJS
                                             starts with DOM elements already on the page.
@@ -201,6 +235,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://lit.dev/">Lit</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/gh/lit/dist@3.3.3/core/lit-core.min.js">15.7&nbsp;kB</a></td>
+                                        <td>6.1&nbsp;kB</td>
                                         <td>
                                             You want to ship reusable custom elements with reactive properties and templates. BitsyJS is for enhancing pages
                                             rather than defining a component library.
@@ -208,6 +244,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://mithril.js.org/">Mithril.js</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/mithril@2.3.8/mithril.min.js">24.7&nbsp;kB</a></td>
+                                        <td>9.0&nbsp;kB</td>
                                         <td>
                                             You want client-side components, routing, and HTTP utilities together. Mithril manages the app's rendered views with
                                             a virtual DOM; BitsyJS does not own the whole app.
@@ -215,6 +253,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://www.arrow-js.com/">ArrowJS</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/@arrow-js/core@1.0.6/dist/index.min.mjs">32.9&nbsp;kB</a></td>
+                                        <td>10.3&nbsp;kB</td>
                                         <td>
                                             You want reactive templates written in JavaScript without a virtual DOM. With BitsyJS, bindings and loops live in
                                             the HTML you already edit.
@@ -222,6 +262,8 @@
                                     </tr>
                                     <tr>
                                         <th scope="row"><a href="https://github.com/visionmedia/page.js">Page.js</a></th>
+                                        <td><a href="https://cdn.jsdelivr.net/npm/page@1.11.6/page.min.js">11.6&nbsp;kB</a></td>
+                                        <td>4.3&nbsp;kB</td>
                                         <td>
                                             You only need to map browser URLs to handlers. It is a router, not a renderer, so you can use it alongside a view
                                             library rather than instead of one.
@@ -230,6 +272,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        <p>
+                            Preact + HTM uses the standalone bundle. ArrowJS includes its
+                            <a href="https://cdn.jsdelivr.net/npm/@arrow-js/core@1.0.6/dist/chunks/internal-DchK7S7v.mjs">required runtime chunk</a> in both
+                            totals.
+                        </p>
 
                         <h2 id="when-bitsyjs-fits">When BitsyJS fits<a class="docs-anchor" href="#when-bitsyjs-fits" aria-hidden="true" tabindex="-1">#</a></h2>
                         <p>

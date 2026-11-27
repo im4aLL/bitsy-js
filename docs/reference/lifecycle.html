@@ -300,12 +300,11 @@ await custom.run(); // logs both listeners again</code></pre>
                         <h2 id="prerender">Pre-rendering<a class="docs-anchor" href="#prerender" aria-hidden="true" tabindex="-1">#</a></h2>
 
                         <p>
-                            The package ships a Playwright-based CLI that serves a directory, opens each page, waits for the rendered signal and writes the
-                            resulting HTML back to disk. It is useful when crawlers or the first paint should see the rendered markup instead of the
-                            placeholders.
+                            The package ships a Playwright-based CLI that serves a directory, opens each page, and writes the resulting HTML to disk. It is
+                            useful when crawlers or the first paint should see the rendered markup instead of placeholders.
                         </p>
 
-                        <pre><code class="language-bash">bitsy-prerender --src=./site --dist=./dist --entry=index.html,docs/reference/lifecycle.html --timeout=15000 --clean</code></pre>
+                        <pre><code class="language-bash">npx bitsy-prerender --src=./site --dist=./dist --entry=index.html,docs/reference/lifecycle.html --timeout=15000 --clean</code></pre>
 
                         <div class="docs-table-scroll" role="region" aria-label="Prerender CLI flags" tabindex="0">
                             <table class="docs-prerender-table">
@@ -328,10 +327,7 @@ await custom.run(); // logs both listeners again</code></pre>
                                     </tr>
                                     <tr>
                                         <td><code>--dist=&lt;dir&gt;</code></td>
-                                        <td>
-                                            Output directory. Required, and it cannot be the same path as
-                                            <code>--src</code>.
-                                        </td>
+                                        <td>Output directory. Required. The source and output directories cannot be the same or contain one another.</td>
                                     </tr>
                                     <tr>
                                         <td><code>--entry=a.html,b.html</code></td>
@@ -346,7 +342,10 @@ await custom.run(); // logs both listeners again</code></pre>
                                     </tr>
                                     <tr>
                                         <td><code>--clean</code></td>
-                                        <td>Removes the output directory before writing. Refuses the working directory and the filesystem root.</td>
+                                        <td>
+                                            Replaces existing output after all pages render and assets are copied. Refuses the working directory and its
+                                            ancestors.
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td><code>--help</code></td>
@@ -356,10 +355,14 @@ await custom.run(); // logs both listeners again</code></pre>
                             </table>
                         </div>
 
+                        <p>To wait for BitsyJS before capturing a page, put this tag in its <code>&lt;head&gt;</code>:</p>
+
+                        <pre><code class="language-html">&lt;meta name="bitsy-prerender" content="wait"&gt;</code></pre>
+
                         <p>
-                            After the network becomes idle, the CLI checks for <code>window.__bitsyRendered</code> or the <code>bitsy:rendered</code> event, but
-                            only if the page source mentions <code>bitsy</code> (case-insensitive). It writes the doctype, if present, and
-                            <code>document.documentElement.outerHTML</code>, then reports browser errors as warnings.
+                            After the network becomes idle, opted-in pages wait for <code>window.__bitsyRendered</code> or the
+                            <code>bitsy:rendered</code> event. Pages without the tag are captured without waiting for BitsyJS. The CLI writes the doctype, if
+                            present, and <code>document.documentElement.outerHTML</code>, then reports browser errors as warnings.
                         </p>
 
                         <p>

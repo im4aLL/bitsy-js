@@ -215,16 +215,16 @@ import { BitsyJS, computed, effect, signal } from "@im4all/bitsy-js";
 
                         <h2 id="sizes">Bundle size<a class="docs-anchor" href="#sizes" aria-hidden="true" tabindex="-1">#</a></h2>
 
-                        <p>The browser build is about <strong>30.4 kB minified</strong> and <strong>9.1 kB gzipped</strong>. It has no runtime dependencies.</p>
+                        <p>The browser build is about <strong>30.5 kB minified</strong> and <strong>9.2 kB gzipped</strong>. It has no runtime dependencies.</p>
 
                         <h2 id="prerender">Pre-render static output<a class="docs-anchor" href="#prerender" aria-hidden="true" tabindex="-1">#</a></h2>
 
                         <p>
-                            The included CLI opens each page with Playwright, waits for the render to finish, and saves the resulting HTML. Use it when you want
-                            to serve the rendered content in the initial response.
+                            The included CLI captures HTML with Playwright so you can serve rendered content in the initial response. Add
+                            <code>&lt;meta name="bitsy-prerender" content="wait"&gt;</code> to the head of each page that needs to wait for BitsyJS.
                         </p>
 
-                        <pre><code class="language-bash">bitsy-prerender --src=./site --dist=./dist --clean</code></pre>
+                        <pre><code class="language-bash">npx bitsy-prerender --src=./site --dist=./dist --clean</code></pre>
 
                         <p>
                             To use the CLI, install <code>playwright</code> and its Chromium browser separately. See

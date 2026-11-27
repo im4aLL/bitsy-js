@@ -3,18 +3,12 @@ import { defineConfig } from "vite-plus";
 
 const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8"));
 
-/**
- * Banner prepended to the standalone library bundle.
- */
 const banner = `/*!
  * ${pkg.name} v${pkg.version}
  * ${pkg.homepage}
  * Released under the ${pkg.license} License
  */`;
 
-/**
- * Build configuration for the standalone browser bundle of lib/bitsy.js.
- */
 const libraryBuild = {
     build: {
         outDir: "dist",
@@ -35,9 +29,6 @@ const libraryBuild = {
     },
 };
 
-/**
- * Build configuration for the demo app served by `vp build` without `--mode lib`.
- */
 const appBuild = {
     build: {
         outDir: "dist-demo",

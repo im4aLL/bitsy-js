@@ -4,9 +4,9 @@
 
 <h1 align="center">BitsyJS</h1>
 
-A tiny, dependency-free, HTML-first view library for adding declarative data binding, reactive signals, loops, conditions, fragments, events, remote data, and form validation to markup you already render. About 30.4 kB minified and 9.1 kB gzipped.
+A tiny, dependency-free, HTML-first view library for adding declarative data binding, reactive signals, loops, conditions, fragments, events, remote data, and form validation to markup you already render. About 30.5 kB minified and 9.2 kB gzipped.
 
-> **Development status:** BitsyJS is actively in development and purely handcrafted. Features and APIs may change. A dedicated documentation site is planned.
+See the [BitsyJS documentation](https://bitsyjs.habibhadi.com) for guides, live examples, and the API reference.
 
 ## What it is
 
@@ -59,10 +59,12 @@ The package includes a `bitsy-prerender` CLI. It uses Playwright to render pages
 ```bash
 npm install -D playwright
 npx playwright install chromium
-bitsy-prerender --src=./site --dist=./dist --clean
+npx bitsy-prerender --src=./site --dist=./dist --clean
 ```
 
-See the [pre-rendering guide](https://github.com/im4aLL/bitsy-js/blob/main/docs/reference/lifecycle.html#prerender) for flags and lifecycle details.
+Add `<meta name="bitsy-prerender" content="wait">` to the `<head>` of pages that must wait for BitsyJS to finish rendering. Plain pages are captured without waiting for a BitsyJS event. Keep the source and output directories separate. `--clean` replaces existing output only after all pages and assets are ready.
+
+See the [pre-rendering guide](https://bitsyjs.habibhadi.com/reference/lifecycle.html#prerender) for flags and lifecycle details.
 
 ## Quick start
 

@@ -239,9 +239,9 @@
                         </h2>
 
                         <p>
-                            While the request runs, BitsyJS adds <code>is--loading</code> to the form and its <code>button[type="submit"]</code> and
-                            <code>input[type="submit"]</code> controls, and disables those controls. Set <code>data-b-form-indicator</code> to use a different
-                            class. This does not block a second submit event triggered programmatically.
+                            While the request runs, BitsyJS adds <code>is--loading</code> to the form and its submit controls, disables enabled submit controls,
+                            and ignores additional submissions for that form. It restores only the controls it disabled when the request finishes. Set
+                            <code>data-b-form-indicator</code> to use a different loading class.
                         </p>
 
                         <pre><code class="language-html">&lt;form action="/users"

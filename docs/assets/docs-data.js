@@ -1,19 +1,16 @@
 export const version = "1.0.0";
-export const gzip = "9.1";
-export const minified = "30.4";
+export const gzip = "9.2";
+export const minified = "30.5";
 export const dependencies = 0;
 
-// Release line for the landing hero eyebrow, rendered by b-js.
 export const tagline = `v${version} - MIT - ${gzip} kB gzipped`;
 
-// Landing stats rendered by b-for.
 export const stats = [
     { value: `${minified} kB`, label: "minified" },
     { value: `${gzip} kB`, label: "gzipped" },
     { value: `${dependencies}`, label: "dependencies" },
 ];
 
-// Page metadata badges rendered by the page-meta partial.
 export const meta = [
     { label: `v${version}`, accent: true },
     { label: "ES module" },
@@ -21,7 +18,6 @@ export const meta = [
     { label: `${gzip} kB gzipped` },
 ];
 
-// Pinned jsDelivr URL for the browser build, rendered by the landing hero and the installation page.
 export const cdn = `https://cdn.jsdelivr.net/npm/@im4all/bitsy-js@${version}/dist/bitsy.min.js`;
 
 export const groups = [

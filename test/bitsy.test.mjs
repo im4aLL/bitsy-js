@@ -15,10 +15,6 @@ let lastEchoHeaders = null;
 
 const pages = new Map();
 
-/**
- * Builds a test page that imports the library source and marks the page ready
- * after the first render.
- */
 function renderPage(body, settings = "") {
     return `<!DOCTYPE html>
 <html>
@@ -35,9 +31,6 @@ window.__ready = true;
 </html>`;
 }
 
-/**
- * Starts a page and waits for BitsyJS to finish its first render.
- */
 async function openPage(name) {
     const page = await browser.newPage();
     const errors = [];
@@ -52,9 +45,6 @@ async function openPage(name) {
     return { page, errors };
 }
 
-/**
- * Delays a response so loading state can be observed in the browser.
- */
 function wait(milliseconds) {
     return new Promise((resolve) => {
         setTimeout(resolve, milliseconds);
@@ -348,6 +338,46 @@ test("AJAX form failures keep the form and leave the target unchanged", async (t
 
     assert.equal(result.formExists, true);
     assert.equal(result.target, "");
+    assert.deepEqual(errors, []);
+});
+
+test("AJAX forms suppress concurrent submits and restore only enabled controls", async (t) => {
+    const { page, errors } = await openPage("ajax-failure");
+    t.after(() => page.close());
+
+    const pending = await page.evaluate(() => {
+        const form = document.querySelector("#form");
+        form.removeAttribute("data-b-form-remove-on-submit");
+        form.innerHTML = '<button id="save">Save</button><button id="locked" type="submit" disabled>Locked</button>';
+        document
+            .querySelector("#out")
+            .insertAdjacentHTML("beforebegin", '<button id="external" form="form">Save too</button>');
+        const save = document.querySelector("#save");
+        const external = document.querySelector("#external");
+        const requests = [];
+        window.testRequests = requests;
+        window.fetch = (_, options) => new Promise((resolve) => requests.push({ method: options.method, resolve }));
+
+        save.click();
+        save.click();
+        form.requestSubmit();
+        external.click();
+
+        return { methods: requests.map(({ method }) => method), disabled: save.disabled && external.disabled };
+    });
+
+    assert.deepEqual(pending, { methods: ["POST"], disabled: true });
+    await page.evaluate(() => window.testRequests[0].resolve(new Response("Saved")));
+    await page.waitForFunction(() => document.querySelector("#out").textContent === "Saved");
+
+    assert.equal(await page.locator("#save").isEnabled(), true);
+    assert.equal(await page.locator("#external").isEnabled(), true);
+    assert.equal(await page.locator("#locked").isDisabled(), true);
+
+    await page.click("#save");
+    assert.equal(await page.evaluate(() => window.testRequests.length), 2);
+    await page.evaluate(() => window.testRequests[1].resolve(new Response("Saved again")));
+    await page.waitForFunction(() => document.querySelector("#out").textContent === "Saved again");
     assert.deepEqual(errors, []);
 });
 

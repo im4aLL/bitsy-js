@@ -1,9 +1,3 @@
-/*
- * BitsyJS docs template - shared behaviour.
- * Theme, mobile navigation, copy buttons, sidebar filter, on-page TOC.
- * Everything degrades to plain links and static markup without JavaScript.
- */
-
 (function () {
     "use strict";
 
@@ -17,9 +11,7 @@
             if (stored === "dark" || stored === "light") {
                 return stored === "dark";
             }
-        } catch {
-            /* storage can be unavailable, fall through to the OS preference */
-        }
+        } catch {}
 
         return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
@@ -53,9 +45,7 @@
         if (persist) {
             try {
                 localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
-            } catch {
-                /* the theme still applies for this page view */
-            }
+            } catch {}
         }
     }
 
@@ -321,9 +311,6 @@
         update();
     }
 
-    /**
-     * Wires the landing page demo tabs: click, arrow keys, Home/End, and the ARIA state that pairs a tab with its panel.
-     */
     function setupDemoTabs() {
         const tabs = Array.prototype.slice.call(document.querySelectorAll("[data-demo-tab]"));
 
